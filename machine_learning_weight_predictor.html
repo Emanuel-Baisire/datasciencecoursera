@@ -1,0 +1,125 @@
+<html>
+<head>
+<title>Course Project: Writeup for Machine Learning</title>
+</head>
+
+<body>
+
+<h2>Overview<h2/>
+
+<p>Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+
+####Data Source:
+The training data for this project are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+</p>
+
+
+<h2>Data preparation:<h2/>
+<p>Installing the required packages to run the selected model.</p>
+
+<!--library(RANN)
+    library(caret)
+-->
+
+<h2>Load datasets:<h2/>
+<p>Loading training and testing dataset to be used for the study analysis.</p>
+
+
+<!--training_data <- read.csv("~/twitter/pml-training.csv",header=T)
+testing_data <- read.csv("~/twitter/pml-testing.csv",header=T)
+-->
+
+<h2>Partition:<h2/>
+
+<p>Partitioning data into two training and testing sets. 
+Training data was allocated 70 percent and 30 percent was reserved for testing.</p>
+
+<!--set.seed(3233)
+trainingIndex <- createDataPartition(training_data$classe, list=FALSE, p=.7)
+training = training_data[trainingIndex,]
+testing = training_data[-trainingIndex,]
+-->
+
+<h2>Cleaning Data:<h2/>
+
+<p> Filter the numeric features and outcome.</p>
+
+<!--num_idx = which(lapply(training,class) %in% c('numeric')  )
+-->
+
+<h2>Fixing missing values.<h2/>
+
+<!--preModel <- preProcess(training[,num_idx], method=c('knnImpute'))
+ptraining <- cbind(training$classe, predict(preModel, training[,num_idx]))
+ptesting <- cbind(testing$classe, predict(preModel, testing[,num_idx]))
+-->
+
+<h2>Rename first Label to classe<h2/>
+<!--names(ptraining)[1] <- 'classe'
+names(ptesting)[1] <- 'classe'
+-->
+
+<h2>Make test set for submission<h2/>
+
+<!--prtesting <- predict(preModel, testing_data[,num_idx])
+-->
+
+<h2> Random Forest Model:<h2/>
+
+<p>Showing how the model was implemented by the use of all classe variables within the dataset.<p/>
+
+<!-- library(randomForest)
+rf_model  <- randomForest(classe ~ ., ptraining)
+-->
+
+<h2>In-sample accuracy:<h2/>
+
+<p>MPG Boxplots<p/>
+<!-- training_pred <- predict(rf_model, ptraining) 
+print(confusionMatrix(training_pred, ptraining$classe))
+  -->
+
+<h2>The in-sample accuracy is projected up to 100%.<h2/>
+
+<h2>Out-of-sample accuracy:<h2/>
+
+<!--testing_pred <- predict(rf_model, ptesting) 
+-->
+
+<h2>Confusion Matrix:<h2/>
+
+<!--print(confusionMatrix(testing_pred, ptesting$classe))
+-->
+
+<p>The cross validation accuracy is up to 98.6%, which should be sufficient for predicting the 20 test observations.<p/>
+
+
+<h2>Test Set Prediction Results:<h2/>
+
+<p>Applying model to the test data.<p/>
+
+<!--answers <- predict(rf_model, prtesting) 
+answers
+-->
+
+<p>Writing outputs to 20 files sample script.<p/>
+
+<!--pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+pml_write_files(answers)
+
+-->
+
+</body>
+</html>
