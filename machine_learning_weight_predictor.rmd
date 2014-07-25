@@ -1,0 +1,114 @@
+---
+title: "weight_predictor"
+author: "Emanuel Baisire"
+date: "Friday, July 25, 2014"
+output: word_document
+---
+#####Course Project: Writeup for Machine Learning
+
+#### Overview:
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+
+####Data Source:
+The training data for this project are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+#### Introduction:
+The task is to make a prediction about weight lifting motion performed by our study subjects.Random Forest model is the preferred algorithm used for the analysis.Given the nature of the weight lifting excercise, Random Forest Model seemed to be the ideal choice for the analysis.
+
+#### Data preparation:
+Installing the required packages to run the selected model.
+
+
+```{r}
+library(RANN)
+library(caret)
+```
+
+#### Load datasets:
+loading the training and testing dataset to be used during the study analysis.
+```{r}
+training_data <- read.csv("~/twitter/pml-training.csv",header=T)
+testing_data <- read.csv("~/twitter/pml-testing.csv",header=T)
+```
+
+#### Partition:
+partitioning data into two training and testing sets. Training data was allocated 70 percent and 30 percent was reserved for testing.
+
+```{r}
+set.seed(3233)
+trainingIndex <- createDataPartition(training_data$classe, list=FALSE, p=.7)
+training = training_data[trainingIndex,]
+testing = training_data[-trainingIndex,]
+```
+#### Cleaning Data: 
+Filter the numeric features and outcome. 
+```{r}
+num_idx = which(lapply(training,class) %in% c('numeric')  )
+```
+Fixing missing values.
+
+```{r}
+preModel <- preProcess(training[,num_idx], method=c('knnImpute'))
+ptraining <- cbind(training$classe, predict(preModel, training[,num_idx]))
+ptesting <- cbind(testing$classe, predict(preModel, testing[,num_idx]))
+```
+Rename first Label to classe
+
+```{r}
+names(ptraining)[1] <- 'classe'
+names(ptesting)[1] <- 'classe'
+```
+#### Make test set for submission
+
+```{r}
+prtesting <- predict(preModel, testing_data[,num_idx])
+```
+#### Random Forest Model:
+Showing how the model was implemented by the use of all classe variables within the dataset.
+
+
+```{r}
+library(randomForest)
+rf_model  <- randomForest(classe ~ ., ptraining)
+```
+#### In-sample accuracy
+```{r}
+training_pred <- predict(rf_model, ptraining) 
+print(confusionMatrix(training_pred, ptraining$classe))
+```
+The in-sample accuracy is projected up to 100%.
+
+#### Out-of-sample accuracy
+```{r}
+testing_pred <- predict(rf_model, ptesting) 
+```
+#### Confusion Matrix: 
+```{r}
+print(confusionMatrix(testing_pred, ptesting$classe))
+```
+
+The cross validation accuracy is up to 98.6%, which should be sufficient for predicting the 20 test observations.
+#### Test Set Prediction Results
+
+Applying model to the test data.
+```{r}
+answers <- predict(rf_model, prtesting) 
+answers
+```
+Writing outputs to 20 files sample script.
+
+```{r}
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+pml_write_files(answers)
